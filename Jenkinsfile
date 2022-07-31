@@ -1,18 +1,15 @@
 pipeline {
-    agent any
-    stages {
-        stage('SCM') {
-            steps {
-                git url: 'https://github.com/gmk1995/java-web-app.git'
-            }
+  agent any
+  options {
+    buildDiscarder(logRotator(numToKeepStr: '5'))
+  }
+  stages {
+    stage('Scan') {
+      steps {
+        withSonarQubeEnv(installationName: 'sonarjenkins') { 
+          sh './mvnw clean org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.0.2155:sonar'
         }
-        stage('build && SonarQube analysis') {
-            steps {
-                withSonarQubeEnv('sonarjenkins') {
-                    // Optionally use a Maven environment you've configured already
-                    withMaven(maven:'MavenBuild') {
-                        sh 'mvn clean package sonar:sonar'
-                    }
-                }
-            }
-        }
+      }
+    }
+  }
+}
